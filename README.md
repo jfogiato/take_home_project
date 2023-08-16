@@ -1,17 +1,17 @@
-# Bayou At-Home Coding Challenge
+# Bayou Take-Home Coding Challenge
 
-Welcome to the Bayou at-home coding challenge! In this challenge, your task is to write a Python class for the Con Edison utility that passes the existing tests and fulfills the requirements outlined below.
+Welcome to the Bayou Take-Home Coding Challenge and congratulations on making it this far!! In this challenge, your task is to write a Python class for the Con Edison utility that passes the existing tests and fulfills the requirements outlined below.
 
 ## Getting Started
 
 1. Clone this repository to your local machine using the following command:
     ```sh
-    git clone git@github.com:Bayou-Energy/at_home_project.git
+    git clone git@github.com:Bayou-Energy/take_home_project.git
 2. There's no default dependencies to install! Of course, you're free to use libraries and to create a `requirements.txt` file to keep track of your project dependencies.
 
 3. Navigate to the project directory and run the test suite.
     ```sh
-    cd at_home_project/src
+    cd take_home_project/src
     python tests.py
 
 ## Requirements
