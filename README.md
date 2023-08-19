@@ -38,7 +38,7 @@ The `parse_bill` function should return a dictionary containing the extracted in
 - `community_solar_bill_credit`: An integer representing the bill credit related to community solar in cents.
 - `meters`: A list of dictionaries, where each dictionary represents a meter. Each meter should have the following keys:
     - `id`: A unique identifier for the meter.
-        type: A string representing the type of the meter.
+    - `type`: A string representing the type of the meter.
     - `billing_period_from`: A string representing the start date of the meter's billing period (ISO8601 format).
     - `billing_period_to`: A string representing the end date of the meter's billing period (ISO8601 format).
     - `consumption`: An integer representing the consumption of the meter.
