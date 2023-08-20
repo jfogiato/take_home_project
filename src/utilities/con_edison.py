@@ -65,7 +65,7 @@ class ConEdison:
             total_amount = convert_to_cents(total_amount.group(1))
 
         # Search for electricity consumption using regex + a capturing group, extract the group, and convert to wH
-        # ** NEED TO DIE THIS DIRECTLY TO METERS LIST **
+        # ** NEED TO TIE THIS DIRECTLY TO METERS LIST **
         # electricity_consumption = convert_to_watts(re.search(r"Delivery (\d+) kWh", full_pdf_text).group(1))
 
         # Search for delivery charge using regex + a capturing group, extract the group, and convert to cents
@@ -85,7 +85,12 @@ class ConEdison:
             supply_charge = convert_to_cents(supply_charge.group(1))
 
         # Search for community solar bill credit using regex + a capturing group, extract the group, and convert to cents
-        # community_solar_bill_credit = convert_to_cents(re.search(r"Adjustments -\$(\d+\.\d{2})", full_pdf_text).group(1))
+        community_solar_bill_credit = re.search(r"ADJUSTMENT INFORMATION.*?\$([\d.]+)", full_pdf_text, re.DOTALL)
+
+        if community_solar_bill_credit is None:
+            community_solar_bill_credit = None
+        else:
+            community_solar_bill_credit = convert_to_cents(community_solar_bill_credit.group(1))
 
         
         # meter_string = r"(\d{9}) (\d{4}) (Estimated|Actual) (\w{3} \d{1,2}, \d{2}) (\d{4}) (Estimated|Actual) (\w{3} \d{1,2}, \d{2}) (\d+) (\d+) kWh"
@@ -115,6 +120,6 @@ class ConEdison:
             # "electricity_consumption": electricity_consumption,
             "delivery_charge": delivery_charge,
             "supply_charge": supply_charge,
-            # "community_solar_bill_credit": community_solar_bill_credit,
+            "community_solar_bill_credit": community_solar_bill_credit,
             # "meters": []
         }
