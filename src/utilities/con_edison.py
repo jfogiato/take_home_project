@@ -37,12 +37,17 @@ class ConEdison:
         billed_on = convert_to_iso_date(re.search(r"Your billing summary as of (\w{3} \d{1,2}, \d{4})", full_pdf_text).group(1))
 
         # Search for outstanding balance using regex + a capturing group, extract the group, and convert to cents
-        outstanding_balance = convert_to_cents(re.search(r"Total charges from your last bill \$(\d+\.\d{2})", full_pdf_text).group(1))
+        # outstanding_balance = convert_to_cents(re.search(r"Total charges from your last bill \$(\d+\.\d{2})", full_pdf_text).group(1))
 
         # Search for full billing period from using regex + two capturing groups, extract each group, and convert to datetime object
-        # full_billing_period = re.search(r"Billing period: (\w{3} \d{1,2}, \d{4})  to (\w{3} \d{1,2}, \d{4})", full_pdf_text)
-        # billing_period_from = convert_to_iso_date(full_billing_period.group(1))
-        # billing_period_to = convert_to_iso_date(full_billing_period.group(2))
+        full_billing_period = re.search(r"Billing period: (\w{3} \d{1,2}, \d{4})  to (\w{3} \d{1,2}, \d{4})", full_pdf_text)
+
+        if full_billing_period:
+            billing_period_from = convert_to_iso_date(full_billing_period.group(1))
+            billing_period_to = convert_to_iso_date(full_billing_period.group(2))
+        else: 
+            billing_period_from = None
+            billing_period_to = None
 
         # Search for total amount due using regex + a capturing group, extract the group, and convert to cents
         # I guessed on format of the potential amount due here becuase the PDF I was working with didn't have an amount due - will revisit
@@ -84,9 +89,9 @@ class ConEdison:
         return {
             "account_number": account_number,
             "billed_on": billed_on,
-            "outstanding_balance": outstanding_balance,
-            # "billing_period_from": billing_period_from,
-            # "billing_period_to": billing_period_to,
+            # "outstanding_balance": outstanding_balance,
+            "billing_period_from": billing_period_from,
+            "billing_period_to": billing_period_to,
             # "total_amount": total_amount,
             # "electricity_consumption": electricity_consumption,
             # "delivery_charge": delivery_charge,
