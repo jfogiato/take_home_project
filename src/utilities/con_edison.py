@@ -13,7 +13,7 @@ class ConEdison:
             dollars, cents = dollar_amount.replace(",", "").replace("$", "").split('.')
             converted_dollars = int(dollars) * 100
             converted_cents = int(cents) if converted_dollars > 0 else int(cents) * -1
-            
+
             return converted_dollars + converted_cents
         
         def convert_to_iso_date(date_string):
@@ -45,24 +45,24 @@ class ConEdison:
 
 
         # Search for full billing period from using regex + two capturing groups, extract each group, and convert to datetime object
-        # full_billing_period = re.search(r"Billing period: (\w{3} \d{1,2}, \d{4})  to (\w{3} \d{1,2}, \d{4})", full_pdf_text)
+        full_billing_period = re.search(r"Billing period: (\w{3} \d{1,2}, \d{4})  to (\w{3} \d{1,2}, \d{4})", full_pdf_text)
 
-        # if full_billing_period is None:
-        #     billing_period_from = None
-        #     billing_period_to = None
-        # else: 
-        #     billing_period_from = convert_to_iso_date(full_billing_period.group(1))
-        #     billing_period_to = convert_to_iso_date(full_billing_period.group(2))
+        if full_billing_period is None:
+            billing_period_from = None
+            billing_period_to = None
+        else: 
+            billing_period_from = convert_to_iso_date(full_billing_period.group(1))
+            billing_period_to = convert_to_iso_date(full_billing_period.group(2))
 
 
         # Search for total amount due using regex + a capturing group, extract the group, and convert to cents
         # I guessed on format of the potential amount due here becuase the PDF I was working with didn't have an amount due - will revisit
-        # total_amount = re.search(r"Total amount due (\$\d+\.\d{2})", full_pdf_text)
+        total_amount = re.search(r"Total amount due (\$[1-9]\d{0,2}(?:,\d{3})*(?:\.\d{2})?)", full_pdf_text)
 
-        # if total_amount is None:
-        #     total_amount = 0
-        # else :
-        #     total_amount = convert_to_cents(total_amount.group(1))
+        if total_amount is None:
+            total_amount = 0
+        else :
+            total_amount = convert_to_cents(total_amount.group(1))
 
         # Search for electricity consumption using regex + a capturing group, extract the group, and convert to wH
         # ** NEED TO DIE THIS DIRECTLY TO METERS LIST **
@@ -109,9 +109,9 @@ class ConEdison:
             "account_number": account_number,
             "billed_on": billed_on,
             "outstanding_balance": outstanding_balance,
-            # "billing_period_from": billing_period_from,
-            # "billing_period_to": billing_period_to,
-            # "total_amount": total_amount,
+            "billing_period_from": billing_period_from,
+            "billing_period_to": billing_period_to,
+            "total_amount": total_amount,
             # "electricity_consumption": electricity_consumption,
             # "delivery_charge": delivery_charge,
             # "supply_charge": supply_charge,
