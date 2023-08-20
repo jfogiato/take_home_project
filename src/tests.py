@@ -14,7 +14,7 @@ class BillParsingTestCase(unittest.TestCase):
             self.assertEqual(parsed_values["total_amount"], 0)
             # self.assertEqual(parsed_values["electricity_consumption"], 536000)
             self.assertEqual(parsed_values["delivery_charge"], 10147)
-            # self.assertEqual(parsed_values["supply_charge"], 6846)
+            self.assertEqual(parsed_values["supply_charge"], 6846)
             # self.assertEqual(parsed_values["community_solar_bill_credit"], 45452)
             # self.assertEqual(parsed_values["meters"], [{'id': '000000000', 'type': 'electric', 'billing_period_from': '2022-08-12', 'billing_period_to': '2022-09-13', 'consumption': 536000, 'tariff': 'EL1 Residential or Religious'}])
     
@@ -30,7 +30,7 @@ class BillParsingTestCase(unittest.TestCase):
             self.assertEqual(parsed_values["total_amount"], 7677567)
             # self.assertEqual(parsed_values["electricity_consumption"], 127200000)
             self.assertEqual(parsed_values["delivery_charge"], 1335799)
-            # self.assertEqual(parsed_values["supply_charge"], None)
+            self.assertEqual(parsed_values["supply_charge"], None)
             # self.assertEqual(parsed_values["community_solar_bill_credit"], None)
             # self.assertEqual(parsed_values["meters"], [
             #     {'id': '000000000', 'type': 'electric', 'billing_period_from': '2022-02-02', 'billing_period_to': '2022-03-04', 'consumption': 60800000, 'tariff': 'EL9 General Large'},
@@ -49,7 +49,7 @@ class BillParsingTestCase(unittest.TestCase):
             self.assertEqual(parsed_values["total_amount"], 0)
             # self.assertEqual(parsed_values["electricity_consumption"], None)
             self.assertEqual(parsed_values["delivery_charge"], None)
-            # self.assertEqual(parsed_values["supply_charge"], None)
+            self.assertEqual(parsed_values["supply_charge"], None)
             # self.assertEqual(parsed_values["community_solar_bill_credit"], None)
             # self.assertEqual(parsed_values["meters"], [])
 
@@ -65,7 +65,7 @@ class BillParsingTestCase(unittest.TestCase):
             self.assertEqual(parsed_values["total_amount"], 0)
             # self.assertEqual(parsed_values["electricity_consumption"], None)
             self.assertEqual(parsed_values["delivery_charge"], None)
-            # self.assertEqual(parsed_values["supply_charge"], None)
+            self.assertEqual(parsed_values["supply_charge"], None)
             # self.assertEqual(parsed_values["community_solar_bill_credit"], None)
             # self.assertEqual(parsed_values["meters"], [])
     
@@ -81,7 +81,7 @@ class BillParsingTestCase(unittest.TestCase):
             self.assertEqual(parsed_values["total_amount"], 0)
             # self.assertEqual(parsed_values["electricity_consumption"], 120000)
             self.assertEqual(parsed_values["delivery_charge"], 85689)
-            # self.assertEqual(parsed_values["supply_charge"], 1071)
+            self.assertEqual(parsed_values["supply_charge"], 1071)
             # self.assertEqual(parsed_values["community_solar_bill_credit"], None)
             # self.assertEqual(parsed_values["meters"], [{'id': '000000000', 'type': 'electric', 'billing_period_from': '2020-03-19', 'billing_period_to': '2022-08-08', 'consumption': 120000, 'tariff': 'EL2 Small Non-Residential'}])
 
