@@ -69,12 +69,12 @@ class ConEdison:
         # electricity_consumption = convert_to_watts(re.search(r"Delivery (\d+) kWh", full_pdf_text).group(1))
 
         # Search for delivery charge using regex + a capturing group, extract the group, and convert to cents
-        # delivery_charge = re.search(r"Total electricity delivery charges \$([\d.]+)", full_pdf_text)
+        delivery_charge = re.search(r"Total electricity delivery charges (\$[1-9]\d{0,2}(?:,\d{3})*(?:\.\d{2})?)", full_pdf_text)
 
-        # if delivery_charge is None:
-        #     delivery_charge = None
-        # else:
-        #     delivery_charge = convert_to_cents(delivery_charge.group(1))
+        if delivery_charge is None:
+            delivery_charge = None
+        else:
+            delivery_charge = convert_to_cents(delivery_charge.group(1))
 
         # Search for supply charge using regex + a capturing group, extract the group, and convert to cents
         # supply_charge = re.search(r"Total electricity supply charges \$([\d.]+)", full_pdf_text)
@@ -113,7 +113,7 @@ class ConEdison:
             "billing_period_to": billing_period_to,
             "total_amount": total_amount,
             # "electricity_consumption": electricity_consumption,
-            # "delivery_charge": delivery_charge,
+            "delivery_charge": delivery_charge,
             # "supply_charge": supply_charge,
             # "community_solar_bill_credit": community_solar_bill_credit,
             # "meters": []
