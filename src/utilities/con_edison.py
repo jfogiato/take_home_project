@@ -5,23 +5,23 @@ from datetime import datetime
 class ConEdison:
 
     def convert_to_cents(dollar_amount):
-            dollars, cents = dollar_amount.replace(",", "").replace("$", "").split('.')
+        dollars, cents = dollar_amount.replace(",", "").replace("$", "").split('.')
 
-            converted_dollars = int(dollars) * 100
-            converted_cents = int(cents) if converted_dollars > 0 else int(cents) * -1
+        converted_dollars = int(dollars) * 100
+        converted_cents = int(cents) if converted_dollars > 0 else int(cents) * -1
 
-            return converted_dollars + converted_cents
+        return converted_dollars + converted_cents
     
     def convert_to_iso_date(date_string):
 
-            date_parts = date_string.split(" ")
+        date_parts = date_string.split(" ")
 
-            if len(date_parts[-1]) == 2:
-                format_string = "%b %d, %y"
-            else:
-                format_string = "%b %d, %Y"
+        if len(date_parts[-1]) == 2:
+            format_string = "%b %d, %y"
+        else:
+            format_string = "%b %d, %Y"
 
-            return datetime.strptime(date_string, format_string).strftime("%Y-%m-%d")
+        return datetime.strptime(date_string, format_string).strftime("%Y-%m-%d")
         
     def convert_to_watts(kwh):
         return int(float(kwh) * 1000)
@@ -131,7 +131,7 @@ class ConEdison:
         else:
             for meter in meters:
                 electricity_consumption += meter["consumption"]
-        
+
         return {
             "account_number": account_number,
             "billed_on": billed_on,
