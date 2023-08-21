@@ -111,7 +111,7 @@ class ConEdison:
             meters = []
 
         elif single_meter_raw is not None:
-            
+
             tariff = re.search(r"Rate: ([A-Z][A-Z]\d{1,2}.*)", full_pdf_text).group(1)
 
             meter = {}
@@ -155,7 +155,7 @@ class ConEdison:
             "billing_period_from": billing_period_from,
             "billing_period_to": billing_period_to,
             "total_amount": total_amount,
-            # "electricity_consumption": electricity_consumption,
+            "electricity_consumption": electricity_consumption,
             "delivery_charge": delivery_charge,
             "supply_charge": supply_charge,
             "community_solar_bill_credit": community_solar_bill_credit,
