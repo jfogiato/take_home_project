@@ -17,7 +17,15 @@ class ConEdison:
             return converted_dollars + converted_cents
         
         def convert_to_iso_date(date_string):
-            return datetime.strptime(date_string, "%b %d, %Y").strftime("%Y-%m-%d")
+
+            date_parts = date_string.split(" ")
+
+            if len(date_parts[-1]) == 2:
+                format_string = "%b %d, %y"
+            else:
+                format_string = "%b %d, %Y"
+
+            return datetime.strptime(date_string, format_string).strftime("%Y-%m-%d")
         
         def convert_to_watts(kwh):
             return int(float(kwh) * 1000)
@@ -64,10 +72,6 @@ class ConEdison:
         else :
             total_amount = convert_to_cents(total_amount.group(1))
 
-        # Search for electricity consumption using regex + a capturing group, extract the group, and convert to wH
-        # ** NEED TO TIE THIS DIRECTLY TO METERS LIST **
-        # electricity_consumption = convert_to_watts(re.search(r"Delivery (\d+) kWh", full_pdf_text).group(1))
-
         # Search for delivery charge using regex + a capturing group, extract the group, and convert to cents
         delivery_charge = re.search(r"Total electricity delivery charges (\$[1-9]\d{0,2}(?:,\d{3})*(?:\.\d{2})?)", full_pdf_text)
 
@@ -92,23 +96,57 @@ class ConEdison:
         else:
             community_solar_bill_credit = convert_to_cents(community_solar_bill_credit.group(1))
 
-        
-        # meter_string = r"(\d{9}) (\d{4}) (Estimated|Actual) (\w{3} \d{1,2}, \d{2}) (\d{4}) (Estimated|Actual) (\w{3} \d{1,2}, \d{2}) (\d+) (\d+) kWh"
 
-        # meters_list_raw = re.findall(meter_string, full_pdf_text)
+        # METERS
 
-        # meters = []
+         # Determine if it's a uni/multi meter bill
+        single_meter_raw = re.search(r"(\d{9}) (\d+) (Actual|Estimate) (\w{3} \d{1,2}, \d{2}) (\d+) (Actual|Estimate|Start) (\w{3} \d{1,2}, \d{2}) (\d+) ?(\d+) (\d+) kWh", full_pdf_text)
 
-        # for meter in meters_list_raw:
-        #     meter = {}
-        #     meter["id"] = meter[0]
-        #     meter["type"] = 'Electric' # Placeholder
-        #     meter["billing_period_from"] = convert_to_iso_date(meter[6])
-        #     meter["billing_period_to"] = convert_to_iso_date(meter[3])
-        #     meter["consumption"] = convert_to_watts(meter[8])
-        #     meter["tariff"] = "EL1 Residential or Religious" # Placeholder
-        #     meters.append(meter)
+        multi_meter_raw = re.findall(r"([A-Z]) ([A-Z]) (\d{9}) (\d+) (Estimated|Actual) (\d+) (Estimated|Actual) (\d+) (\d+) (\d+)", full_pdf_text)
 
+        meters = []
+
+        # Execute logic based on whether it's a single or multi meter bill or neither
+        if single_meter_raw is None and len(multi_meter_raw) == 0 and delivery_charge is None:
+            meters = []
+
+        elif single_meter_raw is not None:
+            
+            tariff = re.search(r"Rate: ([A-Z][A-Z]\d{1,2}.*)", full_pdf_text).group(1)
+
+            meter = {}
+            meter["id"] = single_meter_raw.group(1)
+            meter["type"] = 'electric' if tariff[:2] == 'EL' else None
+            meter["billing_period_from"] = convert_to_iso_date(single_meter_raw.group(7))
+            meter["billing_period_to"] = convert_to_iso_date(single_meter_raw.group(4))
+            meter["consumption"] = convert_to_watts(single_meter_raw.group(10))
+            meter["tariff"] = tariff
+            meters.append(meter)
+
+        elif len(multi_meter_raw) != 0:
+
+            tariff = re.search(r"Rate: ([A-Z][A-Z]\d{1,2}.*)", full_pdf_text).group(1)
+
+            for meter in multi_meter_raw:
+                new_meter = {}
+                new_meter["id"] = meter[2]
+                new_meter["type"] = 'electric' if tariff[:2] == 'EL' else None
+                new_meter["billing_period_from"] = billing_period_from
+                new_meter["billing_period_to"] = billing_period_to
+                new_meter["consumption"] = convert_to_watts(meter[9])
+                new_meter["tariff"] = tariff
+                meters.append(new_meter)
+
+
+        # Search for electricity consumption using regex + a capturing group, extract the group, and convert to wH
+        # ** NEED TO TIE THIS DIRECTLY TO METERS LIST **
+        electricity_consumption = 0
+
+        if len(meters) == 0:
+            electricity_consumption = None
+        else:
+            for meter in meters:
+                electricity_consumption += meter["consumption"]
 
         return {
             "account_number": account_number,
@@ -121,5 +159,5 @@ class ConEdison:
             "delivery_charge": delivery_charge,
             "supply_charge": supply_charge,
             "community_solar_bill_credit": community_solar_bill_credit,
-            # "meters": []
+            "meters": meters
         }
