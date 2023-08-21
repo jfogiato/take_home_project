@@ -5,7 +5,7 @@ class BillParsingTestCase(unittest.TestCase):
 
     def test_con_edison_with_uni_meter_with_credit(self):
         with open("../bill_pdfs/con_edison/uni_meter_with_credit.pdf", "rb") as bill:
-            parsed_values = ConEdison.parse_bill(bill)
+            parsed_values = ConEdison.parse_bill(bill, ConEdison)
             self.assertEqual(parsed_values["account_number"], "000000000000000")
             self.assertEqual(parsed_values["billed_on"], "2022-09-14")
             self.assertEqual(parsed_values["outstanding_balance"], 16454)
@@ -20,7 +20,7 @@ class BillParsingTestCase(unittest.TestCase):
     
     def test_con_edison_with_multi_meter_complex_delivery_no_credits(self):
         with open("../bill_pdfs/con_edison/multi_meter_complex_delivery_no_credits.pdf", "rb") as bill:
-            parsed_values = ConEdison.parse_bill(bill)
+            parsed_values = ConEdison.parse_bill(bill, ConEdison)
             self.assertEqual(parsed_values["account_number"], "000000000000000")
             self.assertEqual(parsed_values["billed_on"], "2022-03-14")
             self.assertEqual(parsed_values["outstanding_balance"], 6341768)
@@ -38,7 +38,7 @@ class BillParsingTestCase(unittest.TestCase):
 
     def test_con_edison_with_none_amount(self):
         with open("../bill_pdfs/con_edison/none_amount.pdf", "rb") as bill:
-            parsed_values = ConEdison.parse_bill(bill)
+            parsed_values = ConEdison.parse_bill(bill, ConEdison)
             self.assertEqual(parsed_values["account_number"], "000000000000000")
             self.assertEqual(parsed_values["billed_on"], "2022-07-05")
             self.assertEqual(parsed_values["outstanding_balance"], 0)
@@ -53,7 +53,7 @@ class BillParsingTestCase(unittest.TestCase):
 
     def test_con_edison_with_none_amount_with_adjustment(self):
         with open("../bill_pdfs/con_edison/none_amount_with_adjustment.pdf", "rb") as bill:
-            parsed_values = ConEdison.parse_bill(bill)
+            parsed_values = ConEdison.parse_bill(bill, ConEdison)
             self.assertEqual(parsed_values["account_number"], "000000000000000")
             self.assertEqual(parsed_values["billed_on"], "2022-07-11")
             self.assertEqual(parsed_values["outstanding_balance"], -3679)
@@ -68,7 +68,7 @@ class BillParsingTestCase(unittest.TestCase):
     
     def test_con_edison_with_none_amount_with_consumption(self):
         with open("../bill_pdfs/con_edison/none_amount_with_consumption.pdf", "rb") as bill:
-            parsed_values = ConEdison.parse_bill(bill)
+            parsed_values = ConEdison.parse_bill(bill, ConEdison)
             self.assertEqual(parsed_values["account_number"], "000000000000000")
             self.assertEqual(parsed_values["billed_on"], "2022-08-09")
             self.assertEqual(parsed_values["outstanding_balance"], -397928)
