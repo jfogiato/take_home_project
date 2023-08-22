@@ -39,27 +39,29 @@ class ConEdison:
 
         # RegEx Variables
         account_number_regex = r"(\d{2}-\d{4}-\d{4}-\d{4}-\d{1})"
-        date_regex_4_digit_year = r"(\w{3} \d{1,2}, \d{4})"
-        date_regex_2_digit_year = r"(\w{3} \d{1,2}, \d{2})"
+        date_4_digit_year_regex = r"(\w{3} \d{1,2}, \d{4})"
+        floating_point_currency_regex = r"(-?\$[0-9,\.]*)"
+        single_meter_regex = r"(\d{9}) (\d+) (Actual|Estimate) (\w{3} \d{1,2}, \d{2}) (\d+) (Actual|Estimate|Start) (\w{3} \d{1,2}, \d{2}) (\d+) ?(\d+) (\d+) kWh"
+        multi_meter_regex = r"([A-Z]) ([A-Z]) (\d{9}) (\d+) (Estimated|Actual) (\d+) (Estimated|Actual) (\d+) (\d+) (\d+)"
+        tarriff_regex = r"Rate: ([A-Z][A-Z]\d{1,2}.*)"
+
         
         # Search for account number using regex + a capturing group, extract the group, and remove dashes
         account_number = re.search(fr"Account number: {account_number_regex}", full_pdf_text).group(1).replace("-", "")
 
         # Search for billed on date using regex + a capturing group, extract the group, and convert to datetime object
-        billed_on = self.convert_to_iso_date(re.search(fr"Your billing summary as of {date_regex_4_digit_year}", full_pdf_text).group(1))
+        billed_on = self.convert_to_iso_date(re.search(fr"Your billing summary as of {date_4_digit_year_regex}", full_pdf_text).group(1))
 
         # Search for outstanding balance using regex + a capturing group, handle conditionally
-        # CHANGE "Total charges..." to "Balance from previous bill"
-        outstanding_balance_match = re.search(r"Total charges from your last bill (-?\$[1-9]\d{0,2}(?:,\d{3})*(?:\.\d{2})?)", full_pdf_text)
-        # joris_class = r"[0-9,\.]*"
+        outstanding_balance_match = re.search(fr"Balance from previous bill {floating_point_currency_regex}", full_pdf_text)
+
         if outstanding_balance_match is None:
             outstanding_balance = 0
         else :
             outstanding_balance = self.convert_to_cents(outstanding_balance_match.group(1))
 
         # Search for full billing period using regex + two capturing groups, handle conditionally
-        
-        full_billing_period_match = re.search(fr"Billing period: {date_regex_4_digit_year}  to {date_regex_4_digit_year}", full_pdf_text)
+        full_billing_period_match = re.search(fr"Billing period: {date_4_digit_year_regex}  to {date_4_digit_year_regex}", full_pdf_text)
 
         if full_billing_period_match is None:
             billing_period_from = None
@@ -68,9 +70,8 @@ class ConEdison:
             billing_period_from = self.convert_to_iso_date(full_billing_period_match.group(1))
             billing_period_to = self.convert_to_iso_date(full_billing_period_match.group(2))
 
-
         # Search for total amount due using regex + a capturing group, handle conditionally
-        total_amount_match = re.search(r"Total amount due (\$[1-9]\d{0,2}(?:,\d{3})*(?:\.\d{2})?)", full_pdf_text)
+        total_amount_match = re.search(fr"Total amount due {floating_point_currency_regex}", full_pdf_text)
 
         if total_amount_match is None:
             total_amount = 0
@@ -78,7 +79,7 @@ class ConEdison:
             total_amount = self.convert_to_cents(total_amount_match.group(1))
 
         # Search for delivery charge using regex + a capturing group, handle conditionally
-        delivery_charge_match = re.search(r"Total electricity delivery charges (\$[1-9]\d{0,2}(?:,\d{3})*(?:\.\d{2})?)", full_pdf_text)
+        delivery_charge_match = re.search(fr"Total electricity delivery charges {floating_point_currency_regex}", full_pdf_text)
 
         if delivery_charge_match is not None:
             delivery_charge = self.convert_to_cents(delivery_charge_match.group(1))
@@ -86,7 +87,7 @@ class ConEdison:
             delivery_charge = None
 
         # Search for supply charge using regex + a capturing group, handle conditionally
-        supply_charge_match = re.search(r"Total electricity supply charges (\$[1-9]\d{0,2}(?:,\d{3})*(?:\.\d{2})?)", full_pdf_text)
+        supply_charge_match = re.search(fr"Total electricity supply charges {floating_point_currency_regex}", full_pdf_text)
 
         if supply_charge_match is not None:
             supply_charge = self.convert_to_cents(supply_charge_match.group(1))
@@ -102,20 +103,14 @@ class ConEdison:
             community_solar_bill_credit = None
 
         # Meter(s) Logic
-        # Determine if it's a uni/multi meter bill
-        single_meter_raw_match = re.search(r"(\d{9}) (\d+) (Actual|Estimate) (\w{3} \d{1,2}, \d{2}) (\d+) (Actual|Estimate|Start) (\w{3} \d{1,2}, \d{2}) (\d+) ?(\d+) (\d+) kWh", full_pdf_text)
-        multi_meter_raw_match = re.findall(r"([A-Z]) ([A-Z]) (\d{9}) (\d+) (Estimated|Actual) (\d+) (Estimated|Actual) (\d+) (\d+) (\d+)", full_pdf_text)
+        single_meter_raw_match = re.search(single_meter_regex, full_pdf_text)
+        multi_meter_raw_match = re.findall(multi_meter_regex, full_pdf_text)
+        tariff_match = re.search(tarriff_regex, full_pdf_text)
+        
+        tariff = tariff_match.group(1) if tariff_match is not None else None
+        meters = []
 
-        # Declare meters 
-        # Loop over single meter then loop over multi
-        # If none, it will remain an empty list
-
-        if single_meter_raw_match is None and len(multi_meter_raw_match) == 0:
-            meters = []
-
-        elif single_meter_raw_match is not None:
-            tariff = re.search(r"Rate: ([A-Z][A-Z]\d{1,2}.*)", full_pdf_text).group(1)
-
+        if single_meter_raw_match is not None:
             meter = {}
             meter["id"] = single_meter_raw_match.group(1)
             meter["type"] = 'electric' if tariff[:2] == 'EL' else None
@@ -125,27 +120,21 @@ class ConEdison:
             meter["tariff"] = tariff
             meters = [meter]
 
-        elif len(multi_meter_raw_match) != 0:
-            tariff = re.search(r"Rate: ([A-Z][A-Z]\d{1,2}.*)", full_pdf_text).group(1)
-
-            meters = []
-
-            for meter in multi_meter_raw_match:
-                new_meter = {}
-                new_meter["id"] = meter[2]
-                new_meter["type"] = 'electric' if tariff[:2] == 'EL' else None
-                new_meter["billing_period_from"] = billing_period_from
-                new_meter["billing_period_to"] = billing_period_to
-                new_meter["consumption"] = self.convert_to_watts(meter[9])
-                new_meter["tariff"] = tariff
-                meters.append(new_meter)
+        for meter in multi_meter_raw_match:
+            new_meter = {}
+            new_meter["id"] = meter[2]
+            new_meter["type"] = 'electric' if tariff[:2] == 'EL' else None
+            new_meter["billing_period_from"] = billing_period_from
+            new_meter["billing_period_to"] = billing_period_to
+            new_meter["consumption"] = self.convert_to_watts(meter[9])
+            new_meter["tariff"] = tariff
+            meters.append(new_meter)
 
         # If there are no meters, consumption is None, otherwise, loop through the meters and add up the consumption
-        electricity_consumption = 0
-
         if len(meters) == 0:
             electricity_consumption = None
         else:
+            electricity_consumption = 0
             for meter in meters:
                 electricity_consumption += meter["consumption"]
 
