@@ -9,7 +9,7 @@ class ConEdison:
         multiplier = 1 if int(dollars) > 0 else -1
 
         converted_dollars = int(dollars) * 100
-        
+
         if len(cents) == 2:
             converted_cents = int(cents)
         elif len(cents) == 1:
@@ -43,14 +43,14 @@ class ConEdison:
         for page in reader.pages:
             full_pdf_text += page.extract_text() + "\n"
 
-        # RegEx Variables
+        # REGEX VARIABLES 
         account_number_regex = r"(\d{2}-\d{4}-\d{4}-\d{4}-\d{1})"
         date_4_digit_year_regex = r"(\w{3} \d{1,2}, \d{4})"
         floating_point_currency_regex = r"(-?\$[0-9,\.]*)"
         single_meter_regex = r"(\d{9}) (\d+) (Actual|Estimate) (\w{3} \d{1,2}, \d{2}) (\d+) (Actual|Estimate|Start) (\w{3} \d{1,2}, \d{2}) (\d+) ?(\d+) (\d+) kWh"
         multi_meter_regex = r"([A-Z]) ([A-Z]) (\d{9}) (\d+) (Estimated|Actual) (\d+) (Estimated|Actual) (\d+) (\d+) (\d+)"
         tarriff_regex = r"Rate: ([A-Z][A-Z]\d{1,2}.*)"
-
+        community_solar_regex = r"ADJUSTMENT INFORMATION.*?\$([\d.]+)"
         
         # Search for account number using regex + a capturing group, extract the group, and remove dashes
         account_number = re.search(fr"Account number: {account_number_regex}", full_pdf_text).group(1).replace("-", "")
@@ -101,21 +101,23 @@ class ConEdison:
             supply_charge = None
 
         # Search for community solar bill credit using regex + a capturing group, handle conditionally
-        community_solar_bill_credit_match = re.search(r"ADJUSTMENT INFORMATION.*?\$([\d.]+)", full_pdf_text, re.DOTALL)
+        community_solar_bill_credit_match = re.search(community_solar_regex, full_pdf_text, re.DOTALL)
 
         if community_solar_bill_credit_match is not None:
             community_solar_bill_credit = self.convert_to_cents(community_solar_bill_credit_match.group(1))
         else:
             community_solar_bill_credit = None
 
-        # Meter(s) Logic
+        # Search for meters & tarrif using regex
         single_meter_raw_match = re.search(single_meter_regex, full_pdf_text)
         multi_meter_raw_match = re.findall(multi_meter_regex, full_pdf_text)
         tariff_match = re.search(tarriff_regex, full_pdf_text)
         
+        # Declare meters and tariff variable, if there is a match, extract the group, otherwise, set to None
         tariff = tariff_match.group(1) if tariff_match is not None else None
         meters = []
 
+        # If there is a single meter, create a meter object and append it to the meters list
         if single_meter_raw_match is not None:
             meter = {}
             meter["id"] = single_meter_raw_match.group(1)
@@ -126,6 +128,8 @@ class ConEdison:
             meter["tariff"] = tariff
             meters = [meter]
 
+        # Iterate over the multi meter matches, create a meter object for each, and append it to the meters list
+        # If there are no multi meter matches, meters will be an empty list
         for meter in multi_meter_raw_match:
             new_meter = {}
             new_meter["id"] = meter[2]
