@@ -5,13 +5,19 @@ from datetime import datetime
 class ConEdison:
 
     def convert_to_cents(dollar_amount):
-        # Account for fractional cent edge cases and one decimal - eg, $9.955 & $9.9
         dollars, cents = dollar_amount.replace(",", "").replace("$", "").split('.')
+        multiplier = 1 if int(dollars) > 0 else -1
 
         converted_dollars = int(dollars) * 100
-        converted_cents = int(cents) if converted_dollars > 0 else int(cents) * -1
+        
+        if len(cents) == 2:
+            converted_cents = int(cents)
+        elif len(cents) == 1:
+            converted_cents = int(cents) * 10
+        else:
+            converted_cents = int(cents) * .1
 
-        return converted_dollars + converted_cents
+        return converted_dollars + (converted_cents * multiplier)
     
     def convert_to_iso_date(date_string):
 
