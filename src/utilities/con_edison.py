@@ -95,7 +95,7 @@ class ConEdison:
             supply_charge = None
 
         # Search for community solar bill credit using regex + a capturing group, handle conditionally
-        community_solar_regex = r"ADJUSTMENT INFORMATION.*?\$([\d.]+)"
+        community_solar_regex = r"ADJUSTMENT INFORMATION.*?\$([\d.]+).*\n.*\n.*community.*project\."
         community_solar_bill_credit_match = re.search(community_solar_regex, full_pdf_text, re.DOTALL)
 
         if community_solar_bill_credit_match is not None:
