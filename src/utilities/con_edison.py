@@ -42,23 +42,17 @@ class ConEdison:
 
         for page in reader.pages:
             full_pdf_text += page.extract_text() + "\n"
-
-        # REGEX VARIABLES 
-        account_number_regex = r"(\d{2}-\d{4}-\d{4}-\d{4}-\d{1})"
-        date_4_digit_year_regex = r"(\w{3} \d{1,2}, \d{4})"
-        floating_point_currency_regex = r"(-?\$[0-9,\.]*)"
-        single_meter_regex = r"(\d{9}) (\d+) (Actual|Estimate) (\w{3} \d{1,2}, \d{2}) (\d+) (Actual|Estimate|Start) (\w{3} \d{1,2}, \d{2}) (\d+) ?(\d+) (\d+) kWh"
-        multi_meter_regex = r"([A-Z]) ([A-Z]) (\d{9}) (\d+) (Estimated|Actual) (\d+) (Estimated|Actual) (\d+) (\d+) (\d+)"
-        tarriff_regex = r"Rate: ([A-Z][A-Z]\d{1,2}.*)"
-        community_solar_regex = r"ADJUSTMENT INFORMATION.*?\$([\d.]+)"
         
         # Search for account number using regex + a capturing group, extract the group, and remove dashes
+        account_number_regex = r"(\d{2}-\d{4}-\d{4}-\d{4}-\d{1})"
         account_number = re.search(fr"Account number: {account_number_regex}", full_pdf_text).group(1).replace("-", "")
 
         # Search for billed on date using regex + a capturing group, extract the group, and convert to datetime object
+        date_4_digit_year_regex = r"(\w{3} \d{1,2}, \d{4})"
         billed_on = self.convert_to_iso_date(re.search(fr"Your billing summary as of {date_4_digit_year_regex}", full_pdf_text).group(1))
 
         # Search for outstanding balance using regex + a capturing group, handle conditionally
+        floating_point_currency_regex = r"(-?\$[0-9,\.]*)"
         outstanding_balance_match = re.search(fr"Balance from previous bill {floating_point_currency_regex}", full_pdf_text)
 
         if outstanding_balance_match is None:
@@ -101,6 +95,7 @@ class ConEdison:
             supply_charge = None
 
         # Search for community solar bill credit using regex + a capturing group, handle conditionally
+        community_solar_regex = r"ADJUSTMENT INFORMATION.*?\$([\d.]+)"
         community_solar_bill_credit_match = re.search(community_solar_regex, full_pdf_text, re.DOTALL)
 
         if community_solar_bill_credit_match is not None:
@@ -109,6 +104,9 @@ class ConEdison:
             community_solar_bill_credit = None
 
         # Search for meters & tarrif using regex
+        single_meter_regex = r"(\d{9}) (\d+) (Actual|Estimate) (\w{3} \d{1,2}, \d{2}) (\d+) (Actual|Estimate|Start) (\w{3} \d{1,2}, \d{2}) (\d+) ?(\d+) (\d+) kWh"
+        multi_meter_regex = r"([A-Z]) ([A-Z]) (\d{9}) (\d+) (Estimated|Actual) (\d+) (Estimated|Actual) (\d+) (\d+) (\d+)"
+        tarriff_regex = r"Rate: ([A-Z][A-Z]\d{1,2}.*)"
         single_meter_raw_match = re.search(single_meter_regex, full_pdf_text)
         multi_meter_raw_match = re.findall(multi_meter_regex, full_pdf_text)
         tariff_match = re.search(tarriff_regex, full_pdf_text)
